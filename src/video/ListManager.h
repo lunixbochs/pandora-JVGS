@@ -1,7 +1,12 @@
 #ifndef JVGS_VIDEO_LISTMANAGER_H
 #define JVGS_VIDEO_LISTMANAGER_H
 
+#ifndef HAVE_GLES
 #include <SDL/SDL_opengl.h>
+#else
+#include <GLES/gl.h>
+#include "DisplayListWrapper.h"
+#endif
 
 namespace jvgs
 {

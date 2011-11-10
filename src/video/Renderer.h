@@ -2,8 +2,19 @@
 #define JVGS_VIDEO_RENDERER_H
 
 #include "../math/Vector2D.h"
-#include <SDL/SDL_opengl.h>
 #include <vector>
+
+#ifndef HAVE_GLES
+#include <SDL/SDL_opengl.h>
+#else
+#include <GLES/gl.h>
+
+#define GLdouble     GLfloat
+#define GL_CLAMP     GL_CLAMP_TO_EDGE
+#define glClearDepth glClearDepthf
+#define glOrtho      glOrthof
+
+#endif
 
 namespace jvgs
 {
@@ -18,8 +29,10 @@ namespace jvgs
             RENDERTYPE_LINES = GL_LINES,
             RENDERTYPE_LINE_STRIP = GL_LINE_STRIP,
             RENDERTYPE_LINE_LOOP = GL_LINE_LOOP,
+#ifndef HAVE_GLES
             RENDERTYPE_QUADS = GL_QUADS,
             RENDERTYPE_POLYGON = GL_POLYGON,
+#endif
             RENDERTYPE_CONCAVE_POLYGON
         };
 

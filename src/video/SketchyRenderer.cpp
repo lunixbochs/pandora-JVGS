@@ -1,4 +1,5 @@
 #include "SketchyRenderer.h"
+#include <stdio.h>
 
 #include "../math/MathManager.h"
 using namespace jvgs::math;
@@ -33,9 +34,11 @@ namespace jvgs
 
             int repeat = MathManager::getInstance()->randInt(1, 10);
             int start = 0, end = (int) vectorList.size();
+
             while(repeat > 0) {
+#ifndef HAVE_GLES
                 glBegin(GL_LINE_STRIP);
-                
+
                 for(int i = start; i < end; i++) {
                     Vector2D vector2d = vectorList[i];
                     glVertex2f(vector2d.getX() + noiseX->nextValue(),
@@ -43,6 +46,19 @@ namespace jvgs
                 }
 
                 glEnd();
+#else
+
+                if (end > 0) {
+                        for (int i = start; i < end; i++) {
+                                Vector2D vector2d = vectorList[i];
+                                pList.push_back(vector2d.getX() + noiseX->nextValue());
+                                pList.push_back(vector2d.getY() + noiseY->nextValue());
+                        }
+                        
+                        pglWriteList(&pList);
+                        pList.clear();
+                }
+#endif
 
                 start = MathManager::getInstance()->randInt(0,
                         (int) vectorList.size());

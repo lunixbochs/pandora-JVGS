@@ -2,7 +2,11 @@
 #include "Renderer.h"
 
 #include <SDL.h>
-#include <SDL_opengl.h>
+
+#ifdef HAVE_GLES
+#include <GLES/gl.h>
+#include "eglport.h"
+#endif
 
 using namespace jvgs::math;
 
@@ -15,11 +19,20 @@ namespace jvgs
         VideoManager::VideoManager()
         {
             SDL_InitSubSystem(SDL_INIT_VIDEO);
+#ifndef HAVE_GLES
             flags = SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWACCEL | SDL_OPENGL;
+#else
+            flags = SDL_DOUBLEBUF | SDL_SWSURFACE;
+
+            if (!EGL_Open()) exit(1);
+#endif
         }
 
         VideoManager::~VideoManager()
         {
+#ifdef HAVE_GLES
+            EGL_Destroy();
+#endif
             SDL_QuitSubSystem(SDL_INIT_VIDEO);
         }
 
@@ -31,6 +44,7 @@ namespace jvgs
 
         void VideoManager::setVideoMode(std::string title)
         {
+#ifndef HAVE_GLES
             SDL_Rect **modes = SDL_ListModes(NULL, flags | SDL_FULLSCREEN);
 
             /* Auto-select video mode. */
@@ -38,9 +52,15 @@ namespace jvgs
             if(modes!=NULL) {
                 size = Vector2D(modes[0]->w, modes[0]->h);
             }
+#else
+            size = Vector2D(800, 480);
+#endif
 
-            SDL_SetVideoMode((int) size.getX(), (int) size.getY(), 0,
+            SDL_SetVideoMode(800, 480, 0,
                     flags | SDL_FULLSCREEN);
+#ifdef HAVE_GLES
+            EGL_Init();
+#endif
             SDL_ShowCursor(0);
             SDL_WM_SetCaption(title.c_str(), NULL);
 
@@ -71,7 +91,7 @@ namespace jvgs
 
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
-            glOrtho(0.0f, (GLfloat) size.getX(), (GLfloat) size.getY(), 
+            glOrtho(0.0f, (GLfloat) size.getX(), (GLfloat) size.getY(),
                     0.0f, -1.0f, 1.0f);
 
             glMatrixMode(GL_MODELVIEW);
@@ -104,7 +124,11 @@ namespace jvgs
 
         void VideoManager::flip() const
         {
+#ifndef HAVE_GLES
             SDL_GL_SwapBuffers();
+#else
+            EGL_SwapBuffers();
+#endif
         }
 
         void VideoManager::identity() const

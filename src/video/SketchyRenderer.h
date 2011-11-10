@@ -4,6 +4,10 @@
 #include "Renderer.h"
 #include "../math/Noise.h"
 
+#ifdef HAVE_GLES
+#include "DisplayListWrapper.h"
+#endif
+
 namespace jvgs
 {
     namespace video
@@ -16,6 +20,10 @@ namespace jvgs
 
                 /** List of vectors to render. */
                 std::vector<math::Vector2D> vectorList;
+
+#ifdef HAVE_GLES
+                std::vector<GLfloat> pList;
+#endif
 
             public:
                 /** Constructor.
